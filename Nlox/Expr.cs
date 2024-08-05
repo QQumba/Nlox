@@ -11,6 +11,7 @@ public abstract class Expr
         public T Visit(Literal expr);
         public T Visit(Unary expr);
         public T Visit(Ternary expr);
+        public T Visit(Variable expr);
     }
 }
 
@@ -92,6 +93,21 @@ public class Ternary : Expr
     public Expr Condition { get; set; }
     public Expr Left { get; set; }
     public Expr Right { get; set; }
+
+    public override T Accept<T>(IVisitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
+}
+
+public class Variable : Expr
+{
+    public Variable(Token name)
+    {
+        Name = name;
+    }
+
+    public Token Name { get; set; }
 
     public override T Accept<T>(IVisitor<T> visitor)
     {

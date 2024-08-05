@@ -14,11 +14,13 @@ AstBuilder.DefineAst(outputDir, "Expr", [
     "Literal  : object? value",
     "Unary    : Token op, Expr right",
     "Ternary  : Expr condition, Expr left, Expr right",
+    "Variable : Token name"
 ]);
 
 AstBuilder.DefineAst(outputDir, "Stmt", [
     "Expression : Expr expr",
-    "Print      : Expr expr"
+    "Print      : Expr expr",
+    "Var        : Token name, Expr initializer",
 ]);
 
 public static class AstBuilder

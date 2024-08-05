@@ -23,7 +23,7 @@ public class Parser
         {
             while (!IsAtEnd())
             {
-                statements.Add(Statement());
+                statements.Add(Declaration());
             }
 
             return statements;
@@ -32,6 +32,28 @@ public class Parser
         {
             return new List<Stmt>();
         }
+    }
+
+    private Stmt Declaration()
+    {
+        if (Match(TokenType.Var))
+        {
+            return VarDeclaration();
+        }
+
+        return Statement();
+    }
+
+    private Stmt VarDeclaration()
+    {
+        Consume(TokenType.Identifier, "Missing identifier.");
+        while (Match(TokenType.Equal))
+        {
+            var expr = Expression();
+        }
+        
+        Consume(TokenType.Semicolon, "Expect ';' after statement.");
+        return null;
     }
 
     private Stmt Statement()

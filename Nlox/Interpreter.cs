@@ -124,6 +124,11 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         return IsTruthy(condition) ? left : right;
     }
 
+    public object? Visit(Variable expr)
+    {
+        throw new NotImplementedException();
+    }
+
     public object? Visit(Expression stmt)
     {
         Evaluate(stmt.Expr);
@@ -135,6 +140,11 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         var value = Evaluate(stmt.Expr);
         Console.WriteLine(Stringify(value));
         return null;
+    }
+
+    public object? Visit(Var stmt)
+    {
+        throw new NotImplementedException();
     }
 
     private object? Evaluate(Expr expr)
