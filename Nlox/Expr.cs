@@ -3,6 +3,15 @@ namespace Nlox;
 public abstract class Expr
 {
     public abstract T Accept<T>(IVisitor<T> visitor);
+
+    public interface IVisitor<T>
+    {
+        public T Visit(Binary expr);
+        public T Visit(Grouping expr);
+        public T Visit(Literal expr);
+        public T Visit(Unary expr);
+        public T Visit(Ternary expr);
+    }
 }
 
 public class Binary : Expr
@@ -26,12 +35,12 @@ public class Binary : Expr
 
 public class Grouping : Expr
 {
-    public Grouping(Expr expression)
+    public Grouping(Expr expr)
     {
-        Expression = expression;
+        Expr = expr;
     }
 
-    public Expr Expression { get; set; }
+    public Expr Expr { get; set; }
 
     public override T Accept<T>(IVisitor<T> visitor)
     {
@@ -88,13 +97,4 @@ public class Ternary : Expr
     {
         return visitor.Visit(this);
     }
-}
-
-public interface IVisitor<T>
-{
-    public T Visit(Binary expr);
-    public T Visit(Grouping expr);
-    public T Visit(Literal expr);
-    public T Visit(Unary expr);
-    public T Visit(Ternary expr);
 }

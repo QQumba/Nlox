@@ -4,6 +4,11 @@ public static class Program
 {
     public static void Main(string[] args)
     {
+        StartRepl();
+    }
+
+    private static void StartRepl()
+    {
         var expression = "";
         while (expression != "exit")
         {
@@ -14,18 +19,19 @@ public static class Program
             {
                 continue;
             }
-            Parse(new TextSource(expression));
+            Interpret(new TextSource(expression));
         }
+    }
 
-        return;
-        
+    private static void ProcessFile()
+    {
         var fileContent = File.ReadAllText("C:/git/Nlox/sources/test.lox");
         var textSource = new TextSource(fileContent);
         
-        Parse(textSource);
+        Interpret(textSource);
     }
 
-    private static void Parse(TextSource textSource)
+    private static void Interpret(TextSource textSource)
     {
         var lox = new Lox();
         
@@ -33,7 +39,7 @@ public static class Program
         var tokens = scanner.Scan();
 
         var parser = new Parser(lox, tokens);
-        var ast = parser.Parse();
+        var statements = parser.Parse();
         
         if (lox.HadError)
         {
@@ -44,8 +50,9 @@ public static class Program
 
             return;
         }
-
-        Console.WriteLine(new AstPrinter().Print(ast!));
+        
+        var interpreter = new Interpreter(lox);
+        interpreter.Interpret(statements);
     }
 
     private static void Tokenize(TextSource textSource)

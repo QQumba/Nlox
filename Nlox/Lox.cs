@@ -1,9 +1,12 @@
-﻿namespace Nlox;
+﻿using Nlox.Exceptions;
+
+namespace Nlox;
 
 public class Lox
 {
     public List<LoxError> Errors { get; } = [];
-    public bool HadError { get; set; } = false;
+    public bool HadError { get; set; }
+    public static bool HadRuntimeError { get; set; }
 
     public void Error(int line, string message)
     {
@@ -21,10 +24,20 @@ public class Lox
         Report(token.Line, $" at '{token.Lexeme}'", message);
     }
 
+    public void Error(Expr expr, string message)
+    {
+        Report(0, "", message);
+    }
+
     private void Report(int line, string where, string message)
     {
         HadError = true;
         Errors.Add(new LoxError(line, where, message));
+    }
+    
+    public void RuntimeError(RuntimeException exception) {
+        Console.WriteLine($"{exception.Message} at\n[line {exception.Token.Line}]");
+        HadRuntimeError = true;
     }
 }
 

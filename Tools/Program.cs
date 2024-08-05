@@ -1,6 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using System.Text;
+﻿using System.Text;
 
 if (args.Length != 1)
 {
@@ -9,15 +7,19 @@ if (args.Length != 1)
 }
 
 var outputDir = args[0];
-List<string> types =
-[
+
+AstBuilder.DefineAst(outputDir, "Expr", [
     "Binary   : Expr left, Token op, Expr right",
-    "Grouping : Expr expression",
+    "Grouping : Expr expr",
     "Literal  : object? value",
     "Unary    : Token op, Expr right",
     "Ternary  : Expr condition, Expr left, Expr right",
-];
-AstBuilder.DefineAst(outputDir, "Expr", types);
+]);
+
+AstBuilder.DefineAst(outputDir, "Stmt", [
+    "Expression : Expr expr",
+    "Print      : Expr expr"
+]);
 
 public static class AstBuilder
 {
@@ -31,6 +33,7 @@ public static class AstBuilder
         sw.WriteLine($"public abstract class {baseName}");
         sw.WriteLine("{");
         sw.WriteLine("public abstract T Accept<T>(IVisitor<T> visitor);".LeftPad());
+        DefineVisitor(sw, baseName, types);
         sw.WriteLine("}");
         
         foreach (var type in types) 
@@ -41,22 +44,21 @@ public static class AstBuilder
             DefineType(sw, baseName, className, fields);
         }
 
-        DefineVisitor(sw, baseName, types);
     }
 
     private static void DefineVisitor(StreamWriter sw, string baseName, List<string> types)
     {
         sw.WriteLine();
-        sw.WriteLine("public interface IVisitor<T>");
-        sw.WriteLine("{");
+        sw.WriteLine("public interface IVisitor<T>".LeftPad());
+        sw.WriteLine("{".LeftPad());
 
         foreach (var type in types)
         {
             var typeName = type.Split(':')[0].Trim();
-            sw.WriteLine($"public T Visit({typeName} {baseName.ToLower()});".LeftPad());
+            sw.WriteLine($"public T Visit({typeName} {baseName.ToLower()});".LeftPad(2));
         }
         
-        sw.WriteLine("}");
+        sw.WriteLine("}".LeftPad());
     }
 
     private static void DefineType(StreamWriter sw, string baseName, string className, string fieldsString)

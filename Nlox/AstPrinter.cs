@@ -2,7 +2,7 @@
 
 namespace Nlox;
 
-public class AstPrinter : IVisitor<string>
+public class AstPrinter : Expr.IVisitor<string>
 {
     public string Print(Expr expr)
     {
@@ -16,7 +16,7 @@ public class AstPrinter : IVisitor<string>
 
     public string Visit(Grouping expr)
     {
-        return Parenthesize("group", expr.Expression);
+        return Parenthesize("group", expr.Expr);
     }
 
     public string Visit(Literal expr)
