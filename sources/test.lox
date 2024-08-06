@@ -1,7 +1,6 @@
-﻿var foo = "based";
+﻿var a = true;
+var b = 2;
 
-if (true) {
-    print "cringe";
-} else {
-    print "not cringe";
+if(a and b + b == 4) {
+    print b;
 }

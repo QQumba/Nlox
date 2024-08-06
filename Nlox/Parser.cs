@@ -146,7 +146,7 @@ public class Parser
 
     private Expr Assignment()
     {
-        var left = Equality();
+        var left = Or();
 
         if (Match(TokenType.Equal))
         {
@@ -163,6 +163,34 @@ public class Parser
         }
         
         return left;
+    }
+
+    private Expr Or()
+    {
+        var expr = And();
+
+        while (Match(TokenType.Or))
+        {
+            var op = Previous();
+            var right = And();
+            expr = new Logical(expr, op, right);
+        }
+
+        return expr;
+    }
+    
+    private Expr And()
+    {
+        var expr = Equality();
+
+        while (Match(TokenType.And))
+        {
+            var op = Previous();
+            var right = Equality();
+            expr = new Logical(expr, op, right);
+        }
+
+        return expr;
     }
 
     private Expr Equality()

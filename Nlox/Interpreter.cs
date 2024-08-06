@@ -117,6 +117,19 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         return expr.Value;
     }
 
+    public object? Visit(Logical expr)
+    {
+        var left = Evaluate(expr.Left);
+
+        // todo: replace left expression value with true/false
+        return expr.Op.Type switch
+        {
+            TokenType.Or when IsTruthy(left) => left,
+            TokenType.And when !IsTruthy(left) => left,
+            _ => Evaluate(expr.Right)
+        };
+    }
+
     public object? Visit(Unary expr)
     {
         var value = Evaluate(expr.Right);
@@ -227,7 +240,12 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     private bool IsTruthy(object? value)
     {
-        return value is not null && value as bool? == true;
+        return value switch
+        {
+            null => false,
+            bool b => b,
+            _ => true
+        };
     }
 
     private bool IsEqual(object? a, object? b)
