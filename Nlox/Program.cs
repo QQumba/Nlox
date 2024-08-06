@@ -4,22 +4,34 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        StartRepl();
+        // StartRepl();
+        ProcessFile();
     }
 
     private static void StartRepl()
     {
-        var expression = "";
-        while (expression != "exit")
+        var lox = new Lox();
+        var interpreter = new Interpreter(lox)
+        {
+            ReplMode = true
+        };
+        
+        while (true)
         {
             Console.Write(">> ");
-            expression = Console.ReadLine();
+            var expression = Console.ReadLine();
+            if (expression == "exit")
+            {
+                break;
+            }
 
             if (string.IsNullOrEmpty(expression))
             {
                 continue;
             }
-            Interpret(new TextSource(expression));
+            
+            Interpret(lox, interpreter, new TextSource(expression));
+            lox.ResetErrors();
         }
     }
 
@@ -27,14 +39,14 @@ public static class Program
     {
         var fileContent = File.ReadAllText("C:/git/Nlox/sources/test.lox");
         var textSource = new TextSource(fileContent);
+        var lox = new Lox();
+        var interpreter = new Interpreter(lox);
         
-        Interpret(textSource);
+        Interpret(lox, interpreter, textSource);
     }
 
-    private static void Interpret(TextSource textSource)
+    private static void Interpret(Lox lox, Interpreter interpreter, TextSource textSource)
     {
-        var lox = new Lox();
-        
         var scanner = new Scanner(lox, textSource);
         var tokens = scanner.Scan();
 
@@ -51,7 +63,6 @@ public static class Program
             return;
         }
         
-        var interpreter = new Interpreter(lox);
         interpreter.Interpret(statements);
     }
 

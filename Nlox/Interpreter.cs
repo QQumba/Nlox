@@ -5,16 +5,27 @@ namespace Nlox;
 public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 {
     private readonly Lox _lox;
-
+    
+    private Environment _env = new();
+    
     public Interpreter(Lox lox)
     {
         _lox = lox;
     }
 
+    public bool ReplMode { get; set; }
+    
     public void Interpret(List<Stmt> statements)
     {
         try
         {
+            if (ReplMode && statements.Last() is Expression expr)
+            {
+                var value = Evaluate(expr.Expr);
+                Console.WriteLine(Stringify(value));
+                return;
+            }
+
             foreach (var statement in statements)
             {
                 Execute(statement);
@@ -41,6 +52,13 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         }
 
         return obj.ToString()!;
+    }
+
+    public object? Visit(Assign expr)
+    {
+        var value = Evaluate(expr.Value);
+        _env.Assign(expr.Name, value);
+        return value;
     }
 
     public object? Visit(Binary expr)
@@ -126,7 +144,31 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? Visit(Variable expr)
     {
-        throw new NotImplementedException();
+        return _env.Read(expr.Name);
+    }
+
+    public object? Visit(Block stmt)
+    {
+        ExecuteBlock(stmt.Statements, new Environment(_env));
+        return null;
+    }
+
+    private void ExecuteBlock(List<Stmt> statements, Environment env)
+    {
+        var previous = _env;
+        try
+        {
+            _env = env;
+
+            foreach (var statement in statements)
+            {
+                Execute(statement);
+            }
+        }
+        finally
+        {
+            _env = previous;
+        }
     }
 
     public object? Visit(Expression stmt)
@@ -144,7 +186,19 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? Visit(Var stmt)
     {
-        throw new NotImplementedException();
+        if (!ReplMode && _env.IsDefined(stmt.Name.Lexeme))
+        {
+            throw new RuntimeException(stmt.Name, $"Variable '{stmt.Name.Lexeme}' already defined.");
+        }
+        
+        object? value = null;
+        if (stmt.Initializer is not null)
+        {
+            value = Evaluate(stmt.Initializer);
+        }
+        
+        _env.Define(stmt.Name.Lexeme, value);
+        return null;
     }
 
     private object? Evaluate(Expr expr)

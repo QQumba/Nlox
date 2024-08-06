@@ -19,41 +19,44 @@ public class Parser
     {
         var statements = new List<Stmt>();
 
+        while (!IsAtEnd())
+        {
+            statements.Add(Declaration());
+        }
+
+        return statements;
+    }
+
+    private Stmt? Declaration()
+    {
         try
         {
-            while (!IsAtEnd())
+            if (Match(TokenType.Var))
             {
-                statements.Add(Declaration());
+                return VarDeclaration();
             }
 
-            return statements;
+            return Statement();
         }
         catch (ParserException)
         {
-            return new List<Stmt>();
+            Synchronize();
+            return null;
         }
-    }
-
-    private Stmt Declaration()
-    {
-        if (Match(TokenType.Var))
-        {
-            return VarDeclaration();
-        }
-
-        return Statement();
     }
 
     private Stmt VarDeclaration()
     {
-        Consume(TokenType.Identifier, "Missing identifier.");
-        while (Match(TokenType.Equal))
+        var name = Consume(TokenType.Identifier, "Expect variable name.");
+        Expr? initializer = null;
+        
+        if (Match(TokenType.Equal))
         {
-            var expr = Expression();
+            initializer = Expression();
         }
         
-        Consume(TokenType.Semicolon, "Expect ';' after statement.");
-        return null;
+        Consume(TokenType.Semicolon, "Expect ';' after variable declaration.");
+        return new Var(name, initializer);
     }
 
     private Stmt Statement()
@@ -63,7 +66,25 @@ public class Parser
             return PrintStatement();
         }
 
+        if (Match(TokenType.LeftBrace))
+        {
+            return new Block(Block());
+        }
+
         return ExpressionStatement();
+    }
+
+    private List<Stmt> Block()
+    {
+        var statements = new List<Stmt>();
+
+        while (!Check(TokenType.RightBrace) && !IsAtEnd())
+        {
+            statements.Add(Declaration());
+        }
+
+        Consume(TokenType.RightBrace, "Expected '}' after block.");
+        return statements;
     }
 
     private Stmt PrintStatement()
@@ -87,8 +108,8 @@ public class Parser
 
     private Expr Ternary()
     {
-        var expr = Equality();
-
+        var expr = Assignment();
+        
         while (Match(TokenType.Question))
         {
             var left = Expression();
@@ -99,6 +120,27 @@ public class Parser
         }
 
         return expr;
+    }
+
+    private Expr Assignment()
+    {
+        var left = Equality();
+
+        if (Match(TokenType.Equal))
+        {
+            var equals = Previous();
+            var right = Assignment();
+
+            if (left is Variable variable)
+            {
+                var name = variable.Name;
+                return new Assign(name, right);
+            }
+
+            Error(equals, "Invalid assign target.");
+        }
+        
+        return left;
     }
 
     private Expr Equality()
@@ -205,6 +247,11 @@ public class Parser
             return expr;
         }
 
+        if (Match(TokenType.Identifier))
+        {
+            return new Variable(Previous());
+        }
+
         throw Error(Peek(), "Expect expression.");
     }
 
@@ -232,7 +279,7 @@ public class Parser
     
     private Token Consume(TokenType type, string error)
     {
-        if (!IsAtEnd() && Peek().Type == type)
+        if (Check(type))
         {
             return Advance();
         }
@@ -240,9 +287,14 @@ public class Parser
         throw Error(Peek(), error);
     }
 
+    private bool Check(TokenType type)
+    {
+        return !IsAtEnd() && Peek().Type == type;
+    }
+
     private bool Match(params TokenType[] types)
     {
-        if (types.Any(type => !IsAtEnd() && Peek().Type == type))
+        if (types.Any(Check))
         {
             Advance();
             return true;

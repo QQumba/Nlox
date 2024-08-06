@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Nlox;
 
 public abstract class Expr
@@ -6,12 +8,30 @@ public abstract class Expr
 
     public interface IVisitor<T>
     {
+        public T Visit(Assign expr);
         public T Visit(Binary expr);
         public T Visit(Grouping expr);
         public T Visit(Literal expr);
         public T Visit(Unary expr);
         public T Visit(Ternary expr);
         public T Visit(Variable expr);
+    }
+}
+
+public class Assign : Expr
+{
+    public Assign(Token name, Expr value)
+    {
+        Name = name;
+        Value = value;
+    }
+
+    public Token Name { get; set; }
+    public Expr Value { get; set; }
+
+    public override T Accept<T>(IVisitor<T> visitor)
+    {
+        return visitor.Visit(this);
     }
 }
 

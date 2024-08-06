@@ -9,6 +9,7 @@ if (args.Length != 1)
 var outputDir = args[0];
 
 AstBuilder.DefineAst(outputDir, "Expr", [
+    "Assign   : Token name, Expr value",
     "Binary   : Expr left, Token op, Expr right",
     "Grouping : Expr expr",
     "Literal  : object? value",
@@ -18,9 +19,11 @@ AstBuilder.DefineAst(outputDir, "Expr", [
 ]);
 
 AstBuilder.DefineAst(outputDir, "Stmt", [
+    "Block      : List<Stmt> statements",
     "Expression : Expr expr",
+    "If         : Expr condition, Stmt then, Stmt else",
     "Print      : Expr expr",
-    "Var        : Token name, Expr initializer",
+    "Var        : Token name, Expr? initializer",
 ]);
 
 public static class AstBuilder
@@ -30,6 +33,8 @@ public static class AstBuilder
         var path = Path.Combine(outputDir, baseName + ".cs");
 
         using var sw = new StreamWriter(path);
+        sw.WriteLine("using System.Collections.Generic;");
+        sw.WriteLine();
         sw.WriteLine("namespace Nlox;");
         sw.WriteLine();
         sw.WriteLine($"public abstract class {baseName}");

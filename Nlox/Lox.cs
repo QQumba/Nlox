@@ -39,6 +39,12 @@ public class Lox
         Console.WriteLine($"{exception.Message} at\n[line {exception.Token.Line}]");
         HadRuntimeError = true;
     }
+
+    public void ResetErrors()
+    {
+        HadError = false;
+        Errors.Clear();
+    }
 }
 
 public class LoxError
