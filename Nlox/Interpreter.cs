@@ -147,6 +147,20 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         return _env.Read(expr.Name);
     }
 
+    public object? Visit(If stmt)
+    {
+        if (IsTruthy(Evaluate(stmt.Condition)))
+        {
+            Execute(stmt.ThenBranch);
+        }
+        else if (stmt.ElseBranch is not null)
+        {
+            Execute(stmt.ElseBranch);
+        }
+        
+        return null;
+    }
+
     public object? Visit(Block stmt)
     {
         ExecuteBlock(stmt.Statements, new Environment(_env));

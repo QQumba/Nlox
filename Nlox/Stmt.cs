@@ -10,6 +10,7 @@ public abstract class Stmt
     {
         public T Visit(Block stmt);
         public T Visit(Expression stmt);
+        public T Visit(If stmt);
         public T Visit(Print stmt);
         public T Visit(Var stmt);
     }
@@ -38,6 +39,25 @@ public class Expression : Stmt
     }
 
     public Expr Expr { get; set; }
+
+    public override T Accept<T>(IVisitor<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
+}
+
+public class If : Stmt
+{
+    public If(Expr condition, Stmt thenBranch, Stmt? elseBranch)
+    {
+        Condition = condition;
+        ThenBranch = thenBranch;
+        ElseBranch = elseBranch;
+    }
+
+    public Expr Condition { get; set; }
+    public Stmt ThenBranch { get; set; }
+    public Stmt? ElseBranch { get; set; }
 
     public override T Accept<T>(IVisitor<T> visitor)
     {

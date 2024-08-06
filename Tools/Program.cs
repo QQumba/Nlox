@@ -21,7 +21,7 @@ AstBuilder.DefineAst(outputDir, "Expr", [
 AstBuilder.DefineAst(outputDir, "Stmt", [
     "Block      : List<Stmt> statements",
     "Expression : Expr expr",
-    "If         : Expr condition, Stmt then, Stmt else",
+    "If         : Expr condition, Stmt thenBranch, Stmt? elseBranch",
     "Print      : Expr expr",
     "Var        : Token name, Expr? initializer",
 ]);
@@ -42,15 +42,14 @@ public static class AstBuilder
         sw.WriteLine("public abstract T Accept<T>(IVisitor<T> visitor);".LeftPad());
         DefineVisitor(sw, baseName, types);
         sw.WriteLine("}");
-        
-        foreach (var type in types) 
+
+        foreach (var type in types)
         {
             sw.WriteLine();
             var className = type.Split(':')[0].Trim();
-            var fields = type.Split(':')[1].Trim(); 
+            var fields = type.Split(':')[1].Trim();
             DefineType(sw, baseName, className, fields);
         }
-
     }
 
     private static void DefineVisitor(StreamWriter sw, string baseName, List<string> types)

@@ -1,7 +1,7 @@
-﻿var a = 1;
-{
-  // var a = a + 2;
-  print a;
-}
+﻿var foo = "based";
 
-print a;
+if (true) {
+    print "cringe";
+} else {
+    print "not cringe";
+}
